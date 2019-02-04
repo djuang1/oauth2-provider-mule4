@@ -88,20 +88,34 @@ payload]]></ee:set-payload>
 	</flow>
 	<flow name="oauth2-register-client-flow" doc:id="3fa2dcc2-6d04-4933-84de-719c1adb2c18" >
 		<http:listener doc:name="/register" doc:id="e62ccbfa-5fbe-4d77-953c-2c4bbf356267" config-ref="HTTPS_Listener_config" path="/register"/>
-		<oauth2-provider:create-client doc:name="Create client" 
-		doc:id="45f5739c-34be-4b4f-b535-d2d2ca2a7a90" 
-		config-ref="Oauth2_Provider_Config" 
-		clientId="#[attributes.queryParams.client_id]" 
-		secret="#[attributes.queryParams.client_secret]" 
-		clientName="#[attributes.queryParams.name]" authorizedGrantTypes='#[["AUTHORIZATION_CODE"]]' type="CONFIDENTIAL" redirectUris="#[[&quot;&quot; ++ Mule::p('demo.redirect_url') ++&quot;&quot;]]"/>
-		<ee:transform doc:name="Transform Message" doc:id="e9a0ae86-e819-4196-bc9e-f37409354d2c" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<try doc:name="Try" doc:id="ea924af5-62d1-43c2-bb04-b2431e69e51c" >
+			<oauth2-provider:create-client doc:name="Create client" doc:id="45f5739c-34be-4b4f-b535-d2d2ca2a7a90" config-ref="Oauth2_Provider_Config" clientId="#[attributes.queryParams.client_id]" secret="#[attributes.queryParams.client_secret]" clientName="#[attributes.queryParams.name]" authorizedGrantTypes='#[["AUTHORIZATION_CODE"]]' redirectUris="#[[&quot;&quot; ++ Mule::p('demo.redirect_url') ++&quot;&quot;]]" />
+			<ee:transform doc:name="Transform Message" doc:id="51973649-7201-4d0c-b78a-6dadf06a6c88" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+{
+	"Status":"SUCCESS"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="1fc835cc-6015-46f3-baae-9bb67074c394" >
+					<ee:transform doc:name="Transform Message" doc:id="a00a5eea-bcd2-4684-9b97-c31dc7b982d3">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Status":"FAILED",
+	"Description": error.description
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
 	</flow>
 	
 	</mule>
