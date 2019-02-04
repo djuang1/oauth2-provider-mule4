@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:spring="http://www.mulesoft.org/schema/mule/spring"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:oauth2-provider="http://www.mulesoft.org/schema/mule/oauth2-provider"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/spring http://www.mulesoft.org/schema/mule/spring/current/mule-spring.xsd
+http://www.mulesoft.org/schema/mule/oauth2-provider http://www.mulesoft.org/schema/mule/oauth2-provider/current/mule-oauth2-provider.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+	
+	<http:listener-config name="HTTPS_Listener_config" doc:name="HTTP Listener config" doc:id="4d9e131c-2871-4e42-a110-e6af7f5101e8" >
+		<http:listener-connection host="0.0.0.0" port="${https.port}" protocol="HTTPS">
+			<tls:context >
+				<tls:trust-store insecure="true" />
+				<tls:key-store type="jks" path="${key.store.path}" alias="${key.store.alias}" keyPassword="${key.store.key.password}" password="${key.store.password}" />				
+			</tls:context>
+		</http:listener-connection>
+	</http:listener-config>
+	
+	<oauth2-provider:config name="Oauth2_Provider_Config" 
+		doc:name="Oauth2 Provider Config"
+		doc:id="6c9de37c-9891-4e90-9505-8923c7e6c703" 
+		listenerConfig="HTTPS_Listener_config" 
+		clientStore="clientObjectStore" 
+		clientSecurityProvider="clientSecurityProvider" 		
+		resourceOwnerSecurityProvider="resourceOwnerSecurityProvider" 		
+		providerName="${oauth.provider.name}" 
+		scopes="${oauth.scopes}"
+		defaultScopes="${oauth.scopes}"
+		supportedGrantTypes="${oauth.supported.grant.types}">        
+        
+		<oauth2-provider:token-config tokenStore="tokenObjectStore" tokenTtl="${oauth.token.ttl}" path="${oauth.access.token.endpoint.path}">
+			<oauth2-provider:refresh-token-strategy >
+				<oauth2-provider:multiple-refresh-tokens />
+				<!--<oauth2-provider:single-refresh-token objectStore="refreshTokenObjectStore" />-->
+			</oauth2-provider:refresh-token-strategy>
+		</oauth2-provider:token-config>
+		
+		<oauth2-provider:authorization-config authorizationCodeStore="authorizationCodeObjectStore" path="${oauth.authorization.endpoint.path}" loginPage="${login.page.path}"/>
+		
+		<oauth2-provider:clients >
+			<oauth2-provider:client clientId="${demo.client_id}"
+					clientName="${demo.client_name}" 
+					secret="${demo.client_secret}">
+				<oauth2-provider:client-redirect-uris >
+					<oauth2-provider:client-redirect-uri value="${demo.redirect_url}" />
+				</oauth2-provider:client-redirect-uris>
+				<oauth2-provider:client-authorized-grant-types >
+					<oauth2-provider:client-authorized-grant-type value="AUTHORIZATION_CODE" />
+				</oauth2-provider:client-authorized-grant-types>
+				<oauth2-provider:client-scopes >
+					<oauth2-provider:client-scope value="ROLE_ADMIN" />
+				</oauth2-provider:client-scopes>
+			</oauth2-provider:client>
+		</oauth2-provider:clients>
+	</oauth2-provider:config>
+		
+	<os:object-store name="clientObjectStore" doc:name="Object store" doc:id="496c9607-4943-47c4-9357-34daa9e66ff3" />
+	<os:object-store name="tokenObjectStore" doc:name="Object store" doc:id="4ff8d63d-a5ea-4b28-8d32-18170f698ac2" />	
+	<os:object-store name="authorizationCodeObjectStore" doc:name="Object store" doc:id="99ef59e1-a57a-4798-94c3-e38fb5252a0f" />
+	 
+	<spring:config name="springConfig" doc:name="Spring Config" doc:id="edbbcac6-eba2-4bcd-824b-11b85343635a" files="beans.xml" />
+	
+	<spring:security-manager doc:name="Spring Security manager" doc:id="7e3d1386-dd1d-4a70-9187-316d8f449415" >
+		<spring:delegate-security-provider name="clientSecurityProvider" delegate-ref="clientAuthenticationManager" />
+	</spring:security-manager>
+	
+	<spring:security-manager doc:name="Spring Security manager" doc:id="c77e4f31-c642-4479-85f6-3de3704adc97" >
+		<spring:delegate-security-provider name="resourceOwnerSecurityProvider" delegate-ref="resourceOwnerAuthenticationManager" />
+	</spring:security-manager>
+	
+	<configuration-properties doc:name="Configuration properties" doc:id="1ca7a041-dea0-46dd-a11b-44c1f3a01683" file="mule.properties" />
+	<flow name="oauth2-validate-flow" doc:id="fc067437-464f-42a0-b107-40cf5dcb4d3e" >
+		<http:listener doc:name="/validate" doc:id="b43283ca-2d58-4f60-8ce9-0e718b83f039" config-ref="HTTPS_Listener_config" path="/validate" allowedMethods="GET,POST" outputMimeType="application/json"/>
+		<oauth2-provider:validate-token doc:name="Validate token" doc:id="81ba0b40-27e1-4f8c-8ff5-2815341ac15e" config-ref="Oauth2_Provider_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="e3339067-3e29-4f0b-8fe6-67ed292e85bb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="oauth2-register-client-flow" doc:id="3fa2dcc2-6d04-4933-84de-719c1adb2c18" >
+		<http:listener doc:name="/register" doc:id="e62ccbfa-5fbe-4d77-953c-2c4bbf356267" config-ref="HTTPS_Listener_config" path="/register"/>
+		<oauth2-provider:create-client doc:name="Create client" 
+		doc:id="45f5739c-34be-4b4f-b535-d2d2ca2a7a90" 
+		config-ref="Oauth2_Provider_Config" 
+		clientId="#[attributes.queryParams.client_id]" 
+		secret="#[attributes.queryParams.client_secret]" 
+		clientName="#[attributes.queryParams.name]" authorizedGrantTypes='#[["AUTHORIZATION_CODE"]]' type="CONFIDENTIAL" redirectUris="#[[&quot;&quot; ++ Mule::p('demo.redirect_url') ++&quot;&quot;]]"/>
+		<ee:transform doc:name="Transform Message" doc:id="e9a0ae86-e819-4196-bc9e-f37409354d2c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	
+	</mule>
