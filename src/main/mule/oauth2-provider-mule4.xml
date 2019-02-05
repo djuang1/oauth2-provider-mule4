@@ -96,7 +96,10 @@ payload]]></ee:set-payload>
 output application/json
 ---
 {
-	"Status":"SUCCESS"
+	"Status":"SUCCESS",
+	"Client ID": attributes.queryParams.client_id,
+	"Client Secret": attributes.queryParams.client_secret,
+	"Client Name": attributes.queryParams.name
 }]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
