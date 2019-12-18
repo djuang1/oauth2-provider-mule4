@@ -20,6 +20,12 @@
 		</ss:authentication-provider>
 	</ss:authentication-manager>
 
-	<ss:authentication-manager id="clientAuthenticationManager" />
+	<ss:authentication-manager alias="clientAuthenticationManager">
+		<ss:authentication-provider>
+			<ss:user-service id="clientUserService">
+				<ss:user name="user" password="{noop}user" authorities="CLIENT" />
+			</ss:user-service>
+		</ss:authentication-provider>
+	</ss:authentication-manager>
 
 </beans>
