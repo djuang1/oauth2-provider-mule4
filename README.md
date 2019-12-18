@@ -4,7 +4,7 @@ The OAuth2 Provider Module allows a Mule Application to be configured as an Auth
 
 This project provides examples to generate and validate a token and register a client.
 
-<img src="https://raw.githubusercontent.com/djuang1/oauth2-provider-mule4/master/docs/flow.png" width="400"/>
+<img src="https://raw.githubusercontent.com/djuang1/oauth2-provider-mule4/master/src/main/resources/docs/flow.png" width="400"/>
 
 # Prerequisites
 
