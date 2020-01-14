@@ -48,7 +48,7 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 			authorizationCodeStore="authorizationCodeObjectStore" path="${oauth.authorization.endpoint.path}"
 			loginPage="${login.page.path}" />
 
-		<!--
+		
 		<oauth2-provider:clients>
 			<oauth2-provider:client clientId="${demo.client_id}"
 				clientName="${demo.client_name}" secret="${demo.client_secret}">
@@ -67,7 +67,7 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 				</oauth2-provider:client-scopes>
 			</oauth2-provider:client>
 		</oauth2-provider:clients>
-		-->
+		
 	</oauth2-provider:config>
 
 	<os:object-store name="clientObjectStore" doc:name="Object store"

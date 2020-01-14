@@ -45,7 +45,8 @@
 							<artifactId>spring-security-config</artifactId>
 						</sharedLibrary>
 					</sharedLibraries>
-				</configuration>
+				<classifier>mule-application</classifier>
+                </configuration>
 			</plugin>
 		</plugins>
 	</build>
