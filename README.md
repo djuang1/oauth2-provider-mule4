@@ -8,9 +8,9 @@ This project provides examples to generate and validate a token and register a c
 
 # Prerequisites
 
-* Anypoint Studio 7.4.1
-* Mule EE 4.2.2
+* Anypoint Studio 7.9.0
+* Mule EE 4.3.0
 
 # Resources
 
-* [OAuth Provider Module Reference](https://docs.mulesoft.com/connectors/oauth/oauth2-provider-documentation-reference#configurations)
+* [OAuth Provider Module Reference](https://docs.mulesoft.com/oauth2-provider-module/1.0/)
